@@ -490,6 +490,7 @@ if(!String.prototype.formatNum) {
 		var end = new Date(this.options.position.end.getTime());
 		end.setHours(time_end[0]);
 		end.setMinutes(time_end[1]);
+		end.setSeconds(0);
 
 		data.all_day = [];
 		data.by_hour = [];
@@ -517,7 +518,7 @@ if(!String.prototype.formatNum) {
 				return;
 			}
 
-			if(e.end < start.getTime()) {
+			if(e.end <= start.getTime()) {
 				data.before_time.push(e);
 				return;
 			}
@@ -821,7 +822,7 @@ if(!String.prototype.formatNum) {
 				break;
 			case 'day':
 				this.options.position.start.setTime(new Date(year, month, day).getTime());
-				this.options.position.end.setTime(new Date(year, month, day + 1).getTime());
+				this.options.position.end.setTime(new Date(year, month, day, 23, 59, 59).getTime());
 				break;
 			case 'week':
 				var curr = new Date(year, month, day);
