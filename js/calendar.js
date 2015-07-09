@@ -505,12 +505,12 @@ if(!String.prototype.formatNum) {
 
 			if(e.start < start.getTime()) {
 				warn(1);
-				e.start_hour = s.getDate() + ' ' + $self.locale['ms' + s.getMonth()] + ' ' + e.start_hour;
+				e.start_hour = $self.locale['ms' + s.getMonth()] + ' ' + s.getDate() + ' ' + e.start_hour;
 			}
 
 			if(e.end > end.getTime()) {
 				warn(1);
-				e.end_hour = f.getDate() + ' ' + $self.locale['ms' + f.getMonth()] + ' ' + e.end_hour;
+				e.end_hour = $self.locale['ms' + f.getMonth()] + ' ' + f.getDate() + ' ' + e.end_hour;
 			}
 
 			if(e.start < start.getTime() && e.end > end.getTime()) {
@@ -1165,7 +1165,8 @@ if(!String.prototype.formatNum) {
 		});
 	};
 
-	Calendar.prototype.getEventsBetween = function(start, end) {
+	Calendar.prototype.getEventsBetween = function(start, end, include_time_in_title) {
+		var $self = this;
 		var events = [];
 		$.each(this.options.events, function() {
 			if(this.start == null) {
@@ -1173,7 +1174,21 @@ if(!String.prototype.formatNum) {
 			}
 			var event_end = this.end || this.start;
 			if((parseInt(this.start) < end) && (parseInt(event_end) >= start)) {
-				events.push(this);
+				if (include_time_in_title){
+					// Make a copy
+					var event = JSON.parse(JSON.stringify(this));
+					var s = new Date(parseInt(event.start));
+					var f = new Date(parseInt(event.end));
+					event.start_hour = $self._format_time(s);
+					event.end_hour = $self._format_time(f);
+					event.start_hour = $self.locale['ms' + s.getMonth()] + ' ' + s.getDate() + ' ' + event.start_hour;
+					event.end_hour = $self.locale['ms' + f.getMonth()] + ' ' + f.getDate() + ' ' + event.end_hour;
+					event.title = event.start_hour + ' to ' + event.end_hour + ' - ' + event.title;
+					events.push(event);
+				}
+				else {
+					events.push(this);
+				}
 			}
 		});
 		return events;
@@ -1194,7 +1209,7 @@ if(!String.prototype.formatNum) {
 			var event_list = $('.events-list', cell);
 			slider.html(self.options.templates['events-list']({
 				cal: self,
-				events: self.getEventsBetween(parseInt(event_list.data('cal-start')), parseInt(event_list.data('cal-end')))
+				events: self.getEventsBetween(parseInt(event_list.data('cal-start')), parseInt(event_list.data('cal-end')), true)
 			}));
 			row.after(slider);
 			self.activecell = $('[data-cal-date]', cell).text();
